@@ -16,4 +16,4 @@ spec:
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             command: 
             - /app/main
-          restartPolicy: OnFailure
+          restartPolicy: Never
