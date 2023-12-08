@@ -22,4 +22,13 @@ docker push localhost:32000/go-main:$COMMIT_HASH || exit 1
 docker push localhost:32000/go-main:latest || exit 1
 
 
+echo "Building kill-job with commit hash $COMMIT_HASH"
+
+docker build -t kill-job:latest -t kill-job:$COMMIT_HASH -t localhost:32000/kill-job:$COMMIT_HASH -t localhost:32000/kill-job:latest -f ./kill-job/kill-job.Dockerfile ./kill-job/ || exit 1
+
+docker push localhost:32000/kill-job:$COMMIT_HASH || exit 1
+
+docker push localhost:32000/kill-job:latest || exit 1
+
+
 echo "Done."

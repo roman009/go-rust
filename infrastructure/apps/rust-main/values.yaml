@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: registry.container-registry.svc.cluster.local:5000/rust-main
+  repository: 10.152.183.28:5000/rust-main # registry.container-registry.svc.cluster.local
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
