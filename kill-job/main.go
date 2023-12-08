@@ -15,12 +15,12 @@ type Endpoint struct {
 func main() {
 	log.Println("Application starting")
 	var urls = []Endpoint{
-		{url: "http://rust-main.default.svc.cluster.local/hello", method: http.MethodGet},
-		{url: "http://go-main.default.svc.cluster.local/hello", method: http.MethodGet},
-		{url: "http://rust-main.default.svc.cluster.local/not-existent", method: http.MethodGet},
-		{url: "http://go-main.default.svc.cluster.local/not-existent", method: http.MethodGet},
-		{url: "http://rust-main.default.svc.cluster.local/die", method: http.MethodPost},
-		{url: "http://go-main.default.svc.cluster.local/die", method: http.MethodPost},
+		{url: "http://rust-main.default.svc.cluster.local:8084/hello", method: http.MethodGet},
+		{url: "http://go-main.default.svc.cluster.local:8085/hello", method: http.MethodGet},
+		{url: "http://rust-main.default.svc.cluster.local:8084/not-existent", method: http.MethodGet},
+		{url: "http://go-main.default.svc.cluster.local:8085/not-existent", method: http.MethodGet},
+		{url: "http://rust-main.default.svc.cluster.local:8084/die", method: http.MethodPost},
+		{url: "http://go-main.default.svc.cluster.local:8085/die", method: http.MethodPost},
 	}
 
 	// select a random endpoint and perform a GET http request
