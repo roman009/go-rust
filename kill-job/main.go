@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Endpoint struct {
@@ -15,6 +16,7 @@ type Endpoint struct {
 
 var RUST_MAIN_APP_URL = "http://localhost:8084"
 var GO_MAIN_APP_URL = "http://localhost:8085"
+var MAX_REQUESTS = 5
 
 func main() {
 	log.Println("Application starting")
@@ -26,10 +28,19 @@ func main() {
 		{url: GO_MAIN_APP_URL + "/not-existent", method: http.MethodGet},
 		{url: RUST_MAIN_APP_URL + "/die", method: http.MethodPost},
 		{url: GO_MAIN_APP_URL + "/die", method: http.MethodPost},
+		{url: RUST_MAIN_APP_URL + "/die", method: http.MethodPost},
+		{url: GO_MAIN_APP_URL + "/die", method: http.MethodPost},
+		{url: RUST_MAIN_APP_URL + "/die", method: http.MethodPost},
+		{url: GO_MAIN_APP_URL + "/die", method: http.MethodPost},
+		{url: RUST_MAIN_APP_URL + "/die", method: http.MethodPost},
+		{url: GO_MAIN_APP_URL + "/die", method: http.MethodPost},
 	}
-	random, _ := rand.Int(rand.Reader, big.NewInt(int64(len(urls))))
-	var endpoint = urls[random.Int64()]
-	makeRequest(endpoint)
+	for i := 0; i < MAX_REQUESTS; i++ {
+		random, _ := rand.Int(rand.Reader, big.NewInt(int64(len(urls))))
+		var endpoint = urls[random.Int64()]
+		makeRequest(endpoint)
+		time.Sleep(500 * time.Millisecond)
+	}
 	log.Println("Application exiting")
 }
 
@@ -42,6 +53,10 @@ func loadEnvironmentVariables() {
 	if goAppUrl := os.Getenv("GO_MAIN_APP_URL"); goAppUrl != "" {
 		GO_MAIN_APP_URL = goAppUrl
 		log.Println("GO_MAIN_APP_URL set to " + goAppUrl + " via GO_MAIN_APP_URL environment variable")
+	}
+	if maxRequests := os.Getenv("MAX_REQUESTS"); maxRequests != "" {
+		MAX_REQUESTS = int(maxRequests[0])
+		log.Println("MAX_REQUESTS set to " + maxRequests + " via MAX_REQUESTS environment variable")
 	}
 }
 
