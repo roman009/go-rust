@@ -14,10 +14,12 @@ spec:
           containers:
           - name: {{ .Chart.Name }}
             image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-            imagePullPolicy: {{ .Values.image.pullPolicy }}
-            args:
-              - "-RUST_MAIN_APP_URL=http://rust-main.default.svc.cluster.local"
-              - "-GO_MAIN_APP_URL=http://go-main.default.svc.cluster.local" 
+            imagePullPolicy: {{ .Values.image.pullPolicy }} 
+            env:
+              - name: RUST_MAIN_APP_URL
+                value: http://rust-main.default.svc.cluster.local
+              - name: GO_MAIN_APP_URL
+                value: http://go-main.default.svc.cluster.local
             command: 
             - /app/main
           restartPolicy: Never
