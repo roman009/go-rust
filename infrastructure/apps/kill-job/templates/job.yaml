@@ -21,7 +21,7 @@ spec:
               - name: GO_MAIN_APP_URL
                 value: http://go-main.default.svc.cluster.local
               - name: MAX_REQUESTS
-                value: "2"
+                value: "1"
             command: 
             - /app/main
           restartPolicy: Never
