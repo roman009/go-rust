@@ -1,24 +1,40 @@
 extern crate log;
 extern crate env_logger;
 use env_logger::Env;
-use log::info;
+use log::{info, warn};
 use std::io::{Write, Read};
 use std::thread;
 
 use std::net::TcpListener;
 
+static mut PORT: i16 = 8084;
+
 fn main() {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     info!("Application starting");
+    info!("Loading environment variables");
+    load_enviroment_variables();
     info!("Serving message {} via HTTP on this endpoint {}", return_message(), return_endpoint());
-    let listener = TcpListener::bind("0.0.0.0:8084").unwrap();
-    
+    let listener = TcpListener::bind(listern_address()).unwrap();
     for stream in listener.incoming() {
         let stream = stream.unwrap();
         info!("Connection established");
         thread::spawn(|| {
             handle_connection(stream);
         });
+    }
+}
+
+fn load_enviroment_variables() {
+    // if there is a environment variable called LISTENING_PORT, use it and set the PORT variable
+    match std::env::var("LISTENING_PORT") {
+        Ok(val) => {
+            info!("Found LISTENING_PORT environment variable, setting PORT to {}", val);
+            unsafe { PORT = val.parse::<i16>().unwrap() };
+        },
+        Err(_e) => {
+            unsafe { warn!("No LISTENING_PORT environment variable found, using default port {}", PORT) };
+        }
     }
 }
 
@@ -54,6 +70,10 @@ fn return_endpoint() -> String {
     format!("{}/{}", return_server(), "hello")
 }
 
-fn return_server() -> &'static str {
-    "http://localhost:8084"
+fn return_server() -> String {
+    format!("http://{}", listern_address())
+}
+
+fn listern_address() -> String {
+    format!("0.0.0.0:{}", unsafe { PORT.to_string() })
 }

@@ -8,6 +8,8 @@ FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /build/main /app/
 
-EXPOSE 8085
+ARG LISTENING_PORT=8080
+ENV LISTENING_PORT=${LISTENING_PORT}
+EXPOSE ${LISTENING_PORT}
 
 ENTRYPOINT ["/app/main"]
