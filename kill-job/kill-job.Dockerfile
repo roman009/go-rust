@@ -10,7 +10,9 @@ COPY --from=builder /build/main /app/
 
 ARG RUST_MAIN_APP_URL=http://rust-main.default.svc.cluster.local
 ARG GO_MAIN_APP_URL=http://go-main.default.svc.cluster.local
+ARG MAX_REQUESTS=5
 ENV RUST_MAIN_APP_URL=$RUST_MAIN_APP_URL
 ENV GO_MAIN_APP_URL=$GO_MAIN_APP_URL
+ENV MAX_REQUESTS=$MAX_REQUESTS
 
 ENTRYPOINT ["/app/main"]
