@@ -65,17 +65,19 @@ func makeRequest(endpoint Endpoint) {
 	if endpoint.method == http.MethodGet {
 		resp, err := http.Get(endpoint.url)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("ERROR: " + err.Error())
+			return
 		}
 		log.Println("Response status: " + resp.Status)
 		return
 	} else if endpoint.method == http.MethodPost {
 		resp, err := http.Post(endpoint.url, "text/plain", nil)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("ERROR: " + err.Error())
+			return
 		}
 		log.Println("Response status: " + resp.Status)
 		return
 	}
-	log.Fatal("Method not supported")
+	log.Println("Method " + endpoint.method + " not supported")
 }
