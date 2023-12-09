@@ -97,3 +97,6 @@ tolerations: []
 
 affinity: {}
 
+crashLoopBackoff:
+  enabled: false
+

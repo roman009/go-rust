@@ -57,6 +57,8 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          crashLoopBackoff:
+            {{- toYaml .Values.crashLoopBackoff | nindent 12 }}
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}
