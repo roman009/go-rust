@@ -15,6 +15,7 @@ func main() {
 	log.Println("Serving message " + getMessage() + " via HTTP on this endpoint: " + getEndpoint())
 	http.HandleFunc("/hello", getHello)
 	http.HandleFunc("/die", postDie)
+	http.HandleFunc("/health", getHealth)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(PORT), nil))
 }
 
@@ -37,13 +38,21 @@ func postDie(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("Connection established")
 	w.Write([]byte("Goodbye, world!"))
+	w.WriteHeader(http.StatusOK)
 	w.(http.Flusher).Flush()
 	log.Fatal("Application exiting")
 }
 
 func getHello(w http.ResponseWriter, r *http.Request) {
 	log.Println("Connection established")
+	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(getMessage()))
+}
+
+func getHealth(w http.ResponseWriter, r *http.Request) {
+	log.Println("Health check connection established")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
 }
 
 func getMessage() string {

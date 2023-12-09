@@ -43,10 +43,13 @@ fn handle_connection(mut stream: std::net::TcpStream) {
     stream.read(&mut buffer).unwrap();
     let get = b"GET /hello HTTP/1.1\r\n";
     let post = b"POST /die HTTP/1.1\r\n";
+    let health = b"GET /health HTTP/1.1\r\n";
     let (status_line, contents, die) = if buffer.starts_with(get) {
         ("HTTP/1.1 200 OK", return_message(), false)
     } else if buffer.starts_with(post) {
         ("HTTP/1.1 200 OK", "Exiting", true)
+    } else if buffer.starts_with(health) {
+        ("HTTP/1.1 200 OK", "OK", false)
     } else {
         ("HTTP/1.1 404 NOT FOUND", "404", false)
     };
@@ -56,6 +59,9 @@ fn handle_connection(mut stream: std::net::TcpStream) {
         format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
     stream.write_all(response.as_bytes()).unwrap();
     stream.flush().unwrap();
+    if buffer.starts_with(health) {
+        info!("Health check connection established");
+    }
     if die {
         info!("Exiting");
         std::process::exit(0);
