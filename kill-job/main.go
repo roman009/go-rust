@@ -18,7 +18,7 @@ var GO_MAIN_APP_URL = "http://localhost:8085"
 
 func main() {
 	log.Println("Application starting")
-	loadEnv()
+	loadEnvironmentVariables()
 	var urls = []Endpoint{
 		{url: RUST_MAIN_APP_URL + "/hello", method: http.MethodGet},
 		{url: GO_MAIN_APP_URL + "/hello", method: http.MethodGet},
@@ -33,7 +33,7 @@ func main() {
 	log.Println("Application exiting")
 }
 
-func loadEnv() {
+func loadEnvironmentVariables() {
 	log.Println("Loading environment variables")
 	if rustAppUrl := os.Getenv("RUST_MAIN_APP_URL"); rustAppUrl != "" {
 		RUST_MAIN_APP_URL = rustAppUrl

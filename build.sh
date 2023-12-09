@@ -31,4 +31,4 @@ docker push localhost:32000/kill-job:$COMMIT_HASH || exit 1
 docker push localhost:32000/kill-job:latest || exit 1
 
 
-echo "Done."
+echo "Done building and pushing."
