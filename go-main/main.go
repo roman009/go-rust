@@ -40,7 +40,8 @@ func postDie(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Goodbye, world!"))
 	w.WriteHeader(http.StatusOK)
 	w.(http.Flusher).Flush()
-	log.Fatal("Application exiting")
+	log.Println("Application exiting")
+	os.Exit(0)
 }
 
 func getHello(w http.ResponseWriter, r *http.Request) {
