@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -48,15 +49,15 @@ func loadEnvironmentVariables() {
 	log.Println("Loading environment variables")
 	if rustAppUrl := os.Getenv("RUST_MAIN_APP_URL"); rustAppUrl != "" {
 		RUST_MAIN_APP_URL = rustAppUrl
-		log.Println("RUST_MAIN_APP_URL set to " + rustAppUrl + " via RUST_MAIN_APP_URL environment variable")
+		log.Println("RUST_MAIN_APP_URL set to " + RUST_MAIN_APP_URL + " via RUST_MAIN_APP_URL environment variable")
 	}
 	if goAppUrl := os.Getenv("GO_MAIN_APP_URL"); goAppUrl != "" {
 		GO_MAIN_APP_URL = goAppUrl
-		log.Println("GO_MAIN_APP_URL set to " + goAppUrl + " via GO_MAIN_APP_URL environment variable")
+		log.Println("GO_MAIN_APP_URL set to " + GO_MAIN_APP_URL + " via GO_MAIN_APP_URL environment variable")
 	}
 	if maxRequests := os.Getenv("MAX_REQUESTS"); maxRequests != "" {
-		MAX_REQUESTS = int(maxRequests[0])
-		log.Println("MAX_REQUESTS set to " + maxRequests + " via MAX_REQUESTS environment variable")
+		MAX_REQUESTS, _ = strconv.Atoi(maxRequests)
+		log.Println("MAX_REQUESTS set to " + strconv.Itoa(MAX_REQUESTS) + " via MAX_REQUESTS environment variable")
 	}
 }
 
