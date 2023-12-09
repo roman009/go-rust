@@ -96,6 +96,3 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
-
-crashLoopBackoff:
-  enabled: false
