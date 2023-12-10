@@ -85,12 +85,14 @@ fn handle_connection(mut stream: std::net::TcpStream) {
 
 fn get_services_json() -> String {
     let mut ret = String::new();
+    ret.push_str("[");
     unsafe {
         for kv in SERVICES_MAP.iter() {
             let service = kv.1;
             ret.push_str(&json!(service).to_string());
         };
     };
+    ret.push_str("]");
     ret
 }
 
