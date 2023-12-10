@@ -49,7 +49,6 @@ fn main() {
     let listener = TcpListener::bind(listern_address()).unwrap();
     for stream in listener.incoming() {
         let stream = stream.unwrap();
-        info!("Connection established");
         thread::spawn(|| {
             handle_connection(stream);
         });
@@ -57,6 +56,7 @@ fn main() {
 }
 
 fn handle_connection(mut stream: std::net::TcpStream) {
+    info!("Connection established");
     let mut buffer = [0; 512];
     stream.read(&mut buffer).unwrap();
     let health = b"GET /health HTTP/1.1\r\n";

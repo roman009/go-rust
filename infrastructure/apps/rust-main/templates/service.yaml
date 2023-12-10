@@ -4,6 +4,7 @@ metadata:
   name: {{ include "rust-main.fullname" . }}
   labels:
     {{- include "rust-main.labels" . | nindent 4 }}
+    {{- toYaml .Values.labels | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
