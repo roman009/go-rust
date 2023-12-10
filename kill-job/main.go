@@ -66,14 +66,18 @@ func main() {
 				}
 			}
 		}
+		if len(filteredServices) == 0 {
+			log.Println("No killable services found")
+			break
+		}
 		for _, service := range filteredServices {
 			log.Println("Filtered service " + service.Name + " at " + service.Url)
 		}
 
-		random, _ := rand.Int(rand.Reader, big.NewInt(int64(len(availableServices))))
+		random, _ := rand.Int(rand.Reader, big.NewInt(int64(len(filteredServices))))
 		randomEndpoint, randomMethod := getRandomEndpoint()
 		makeRequest(Endpoint{
-			url:    "http://" + availableServices[random.Int64()].Url + "/" + randomEndpoint,
+			url:    "http://" + filteredServices[random.Int64()].Url + "/" + randomEndpoint,
 			method: randomMethod,
 		})
 		time.Sleep(500 * time.Millisecond)
