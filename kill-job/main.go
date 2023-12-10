@@ -23,11 +23,11 @@ var MAX_REQUESTS = 5
 var SERVICE_DISCOVERER_URL = "http://localhost:8086"
 
 type AppService struct {
-	url    string   `json:"url"`
-	port   int32    `json:"port"`
-	labels []string `json:"labels"`
-	ip     string   `json:"ip"`
-	name   string   `json:"name"`
+	Url    string   `json:"url"`
+	Port   int32    `json:"port"`
+	Labels []string `json:"labels"`
+	Ip     string   `json:"ip"`
+	Name   string   `json:"name"`
 }
 
 func main() {
@@ -55,13 +55,13 @@ func main() {
 			return
 		}
 		for _, service := range availableServices {
-			log.Println("Found service " + service.name + " at " + service.url)
+			log.Println("Found service " + service.Name + " at " + service.Url)
 		}
 
 		random, _ := rand.Int(rand.Reader, big.NewInt(int64(len(availableServices))))
 		randomEndpoint, randomMethod := getRandomEndpoint()
 		makeRequest(Endpoint{
-			url:    "http://" + availableServices[random.Int64()].url + "/" + randomEndpoint,
+			url:    "http://" + availableServices[random.Int64()].Url + "/" + randomEndpoint,
 			method: randomMethod,
 		})
 		time.Sleep(500 * time.Millisecond)
