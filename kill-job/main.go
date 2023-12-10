@@ -58,6 +58,18 @@ func main() {
 			log.Println("Found service " + service.Name + " at " + service.Url)
 		}
 
+		var filteredServices []AppService
+		for _, service := range availableServices {
+			for _, label := range service.Labels {
+				if label == "type=killable" {
+					filteredServices = append(filteredServices, service)
+				}
+			}
+		}
+		for _, service := range filteredServices {
+			log.Println("Filtered service " + service.Name + " at " + service.Url)
+		}
+
 		random, _ := rand.Int(rand.Reader, big.NewInt(int64(len(availableServices))))
 		randomEndpoint, randomMethod := getRandomEndpoint()
 		makeRequest(Endpoint{
