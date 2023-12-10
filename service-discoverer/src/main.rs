@@ -1,24 +1,29 @@
+// this application will be used to discover services in the cluster
+// it will call the kube api to get the list of services and keep a local cache, which
+// will be refreshed every 30 seconds
+// the application will also expose a http endpoint that will return the list of services
+// in the cluster that can be filtered by tags
+
+use env_logger::Env;
+use k8s_openapi::{
+    api::core::v1::Service,
+    serde::Serialize,
+    serde_json::json,
+};
+use kube::Api;
+use log::{info, warn};
+use once_cell::sync::Lazy;
 use std::{
     io::{Read, Write},
     net::TcpListener,
     thread,
 };
 
-// this application will be used to discover services in the cluster
-// it will call the kube api to get the list of services and keep a local cache, which
-// will be refreshed every 30 seconds
-// the application will also expose a http endpoint that will return the list of services
-// in the cluster that can be filtered by tags
-use env_logger::Env;
-use k8s_openapi::{api::core::v1::Service, serde_json};
-use kube::Api;
-use log::{info, warn};
-use once_cell::sync::Lazy;
-
 static mut PORT: i32 = 8084;
 static mut KUBE_API_URL: Lazy<String> = Lazy::new(|| "http://localhost:8080".to_string());
 static mut SERVICES: Vec<AppService> = Vec::new();
 
+#[derive(Serialize)]
 struct AppService {
     name: String,
     labels: Vec<String>,
@@ -57,25 +62,11 @@ fn handle_connection(mut stream: std::net::TcpStream) {
     let health = b"GET /health HTTP/1.1\r\n";
     let endpoints = b"GET /endpoints HTTP/1.1\r\n";
     let (status_line, contents) = if buffer.starts_with(health) {
-        ("HTTP/1.1 200 OK", "OK")
+        ("HTTP/1.1 200 OK", "OK".to_string())
     } else if buffer.starts_with(endpoints) {
-        // return an json array of services objects
-        let mut services: Vec<AppService> = Vec::new();
-        unsafe {
-            for service in SERVICES.iter() {
-                services.push(AppService {
-                    name: service.name.clone(),
-                    labels: service.labels.clone(),
-                    ip: service.ip.clone(),
-                    port: service.port,
-                    url: service.url.clone(),
-                });
-            }
-        }
-        let json = serde_json::to_string(&services).unwrap();
-        ("HTTP/1.1 200 OK", json.as_str())
+        ("HTTP/1.1 200 OK", get_services_json())
     } else {
-        ("HTTP/1.1 404 NOT FOUND", "404")
+        ("HTTP/1.1 404 NOT FOUND", "404".to_string())
     };
 
     let length = contents.len();
@@ -85,6 +76,11 @@ fn handle_connection(mut stream: std::net::TcpStream) {
     if buffer.starts_with(health) {
         info!("Health check connection established");
     }
+}
+
+fn get_services_json() -> String {
+    let ret = json!(unsafe { &SERVICES }).to_string();
+    ret
 }
 
 fn show_services() {

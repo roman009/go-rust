@@ -1225,6 +1225,7 @@ dependencies = [
  "kube",
  "log",
  "once_cell",
+ "serde",
  "tokio",
 ]
 
