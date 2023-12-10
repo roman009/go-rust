@@ -13,6 +13,10 @@ image:
 imagePullSecrets: []
 nameOverride: "go-main"
 fullnameOverride: "go-main"
+labels:
+  run: go-main
+  type: killable
+  via: http
 
 serviceAccount:
   # Specifies whether a service account should be created
