@@ -39,6 +39,8 @@ spec:
           env:
             - name: "LISTENING_PORT"
               value: "{{ .Values.service.port }}"
+            - name: "REFRESH_INTERVAL"
+              value: "{{ .Values.refreshInterval }}"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

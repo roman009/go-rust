@@ -5,11 +5,7 @@
 // in the cluster that can be filtered by tags
 
 use env_logger::Env;
-use k8s_openapi::{
-    api::core::v1::Service,
-    serde::Serialize,
-    serde_json::json,
-};
+use k8s_openapi::{api::core::v1::Service, serde::Serialize, serde_json::json};
 use kube::Api;
 use log::{info, warn};
 use once_cell::sync::Lazy;
@@ -20,6 +16,7 @@ use std::{
 };
 
 static mut PORT: i32 = 8084;
+static mut REFRESH_INTERVAL: i32 = 30;
 static mut KUBE_API_URL: Lazy<String> = Lazy::new(|| "http://localhost:8080".to_string());
 static mut SERVICES: Vec<AppService> = Vec::new();
 
@@ -37,14 +34,21 @@ fn main() {
     info!("Application starting");
     load_enviroment_variables();
     {
-        let rt = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .unwrap();
-        rt.block_on(load_services());
+        thread::spawn(|| loop {
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap();
+            rt.block_on(load_services());
+            show_services_in_logs();
+            unsafe {
+                info!("Sleeping for {} seconds", REFRESH_INTERVAL);
+            }
+            std::thread::sleep(std::time::Duration::from_secs(unsafe {
+                REFRESH_INTERVAL.try_into().unwrap()
+            }));
+        });
     }
-    show_services();
-
     info!("Listening via HTTP on this server {}", return_server());
     let listener = TcpListener::bind(listern_address()).unwrap();
     for stream in listener.incoming() {
@@ -83,7 +87,7 @@ fn get_services_json() -> String {
     ret
 }
 
-fn show_services() {
+fn show_services_in_logs() {
     unsafe {
         for service in SERVICES.iter() {
             info!(
@@ -158,6 +162,23 @@ fn load_enviroment_variables() {
                 warn!(
                     "No KUBE_API_URL environment variable found, using default url {}",
                     KUBE_API_URL.as_str()
+                )
+            };
+        }
+    }
+    match std::env::var("REFRESH_INTERVAL") {
+        Ok(val) => {
+            info!(
+                "Found REFRESH_INTERVAL environment variable, setting REFRESH_INTERVAL to {}",
+                val
+            );
+            unsafe { REFRESH_INTERVAL = val.parse::<i32>().unwrap() };
+        }
+        Err(_e) => {
+            unsafe {
+                warn!(
+                    "No REFRESH_INTERVAL environment variable found, using default interval {}",
+                    REFRESH_INTERVAL
                 )
             };
         }

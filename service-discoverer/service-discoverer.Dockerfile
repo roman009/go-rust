@@ -16,5 +16,7 @@ COPY --from=builder /build/target/release/service-discoverer /app/
 ARG LISTENING_PORT=8080
 ENV LISTENING_PORT=${LISTENING_PORT}
 EXPOSE ${LISTENING_PORT}
+ARG REFRESH_INTERVAL=10
+ENV REFRESH_INTERVAL=${REFRESH_INTERVAL}
 
 ENTRYPOINT ["/app/service-discoverer"]
