@@ -1,9 +1,3 @@
-// this application will be used to discover services in the cluster
-// it will call the kube api to get the list of services and keep a local cache, which
-// will be refreshed every 30 seconds
-// the application will also expose a http endpoint that will return the list of services
-// in the cluster that can be filtered by tags
-
 use env_logger::Env;
 use k8s_openapi::{api::core::v1::Service, serde::Serialize, serde_json::json};
 use kube::Api;
@@ -21,7 +15,7 @@ static mut KUBE_API_URL: Lazy<String> = Lazy::new(|| "http://localhost:8080".to_
 static mut SERVICES_MAP: Lazy<std::collections::HashMap<String, AppService>> =
     Lazy::new(|| std::collections::HashMap::new());
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 struct AppService {
     name: String,
     labels: Vec<String>,
@@ -84,16 +78,15 @@ fn handle_connection(mut stream: std::net::TcpStream) {
 }
 
 fn get_services_json() -> String {
-    let mut ret = String::new();
-    ret.push_str("[");
+    let mut services: Vec<AppService> = Vec::new();
     unsafe {
         for kv in SERVICES_MAP.iter() {
             let service = kv.1;
-            ret.push_str(&json!(service).to_string());
+            services.push(service.clone());
         };
     };
-    ret.push_str("]");
-    ret
+    let json_string = json!(services).to_string();
+    json_string
 }
 
 fn show_services_in_logs() {
