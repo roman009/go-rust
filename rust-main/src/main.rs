@@ -12,7 +12,6 @@ static mut PORT: i16 = 8084;
 fn main() {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     info!("Application starting");
-    info!("Loading environment variables");
     load_enviroment_variables();
     info!("Serving message {} via HTTP on this endpoint {}", return_message(), return_endpoint());
     let listener = TcpListener::bind(listern_address()).unwrap();
@@ -26,7 +25,7 @@ fn main() {
 }
 
 fn load_enviroment_variables() {
-    // if there is a environment variable called LISTENING_PORT, use it and set the PORT variable
+    info!("Loading environment variables");
     match std::env::var("LISTENING_PORT") {
         Ok(val) => {
             info!("Found LISTENING_PORT environment variable, setting PORT to {}", val);

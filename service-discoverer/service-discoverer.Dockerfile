@@ -9,11 +9,11 @@ RUN cargo build --release
 
 FROM docker.io/library/debian:bullseye-slim
 WORKDIR /app
-COPY --from=builder /build/target/release/rust-main /app/
+COPY --from=builder /build/target/release/service-discoverer /app/
 RUN apt update -y && apt install -y libc6 libssl-dev build-essential
 
 ARG LISTENING_PORT=8080
 ENV LISTENING_PORT=${LISTENING_PORT}
 EXPOSE ${LISTENING_PORT}
 
-ENTRYPOINT ["/app/rust-main"]
+ENTRYPOINT ["/app/service-discoverer"]

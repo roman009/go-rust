@@ -31,4 +31,13 @@ docker push localhost:32000/kill-job:$COMMIT_HASH || exit 1
 docker push localhost:32000/kill-job:latest || exit 1
 
 
+echo "Building service-discoverer with commit hash $COMMIT_HASH"
+
+docker build -t service-discoverer:latest -t kill-job:$COMMIT_HASH -t localhost:32000/service-discoverer:$COMMIT_HASH -t localhost:32000/service-discoverer:latest -f ./service-discoverer/service-discoverer.Dockerfile ./service-discoverer/ || exit 1
+
+docker push localhost:32000/service-discoverer:$COMMIT_HASH || exit 1
+
+docker push localhost:32000/service-discoverer:latest || exit 1
+
+
 echo "Done building and pushing."

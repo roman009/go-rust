@@ -13,6 +13,9 @@ image:
 imagePullSecrets: []
 nameOverride: "kill-job"
 fullnameOverride: "kill-job"
+labels:
+  run: kill-job
+  type: non-killable
 
 serviceAccount:
   # Specifies whether a service account should be created
