@@ -1,8 +1,8 @@
-extern crate log;
 extern crate env_logger;
+extern crate log;
 use env_logger::Env;
 use log::{info, warn};
-use std::io::{Write, Read};
+use std::io::{Read, Write};
 use std::thread;
 
 use std::net::TcpListener;
@@ -13,7 +13,11 @@ fn main() {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     info!("Application starting");
     load_enviroment_variables();
-    info!("Serving message {} via HTTP on this endpoint {}", return_message(), return_endpoint());
+    info!(
+        "Serving message {} via HTTP on this endpoint {}",
+        return_message(),
+        return_endpoint()
+    );
     let listener = TcpListener::bind(listern_address()).unwrap();
     for stream in listener.incoming() {
         let stream = stream.unwrap();
@@ -28,11 +32,19 @@ fn load_enviroment_variables() {
     info!("Loading environment variables");
     match std::env::var("LISTENING_PORT") {
         Ok(val) => {
-            info!("Found LISTENING_PORT environment variable, setting PORT to {}", val);
+            info!(
+                "Found LISTENING_PORT environment variable, setting PORT to {}",
+                val
+            );
             unsafe { PORT = val.parse::<i16>().unwrap() };
-        },
+        }
         Err(_e) => {
-            unsafe { warn!("No LISTENING_PORT environment variable found, using default port {}", PORT) };
+            unsafe {
+                warn!(
+                    "No LISTENING_PORT environment variable found, using default port {}",
+                    PORT
+                )
+            };
         }
     }
 }
@@ -54,8 +66,7 @@ fn handle_connection(mut stream: std::net::TcpStream) {
     };
 
     let length = contents.len();
-    let response =
-        format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
+    let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
     stream.write_all(response.as_bytes()).unwrap();
     stream.flush().unwrap();
     if buffer.starts_with(health) {

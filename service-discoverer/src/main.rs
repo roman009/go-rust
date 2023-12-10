@@ -1,10 +1,16 @@
+use std::{
+    io::{Read, Write},
+    net::TcpListener,
+    thread,
+};
+
 // this application will be used to discover services in the cluster
 // it will call the kube api to get the list of services and keep a local cache, which
 // will be refreshed every 30 seconds
 // the application will also expose a http endpoint that will return the list of services
 // in the cluster that can be filtered by tags
 use env_logger::Env;
-use k8s_openapi::api::core::v1::Service;
+use k8s_openapi::{api::core::v1::Service, serde_json};
 use kube::Api;
 use log::{info, warn};
 use once_cell::sync::Lazy;
@@ -15,9 +21,10 @@ static mut SERVICES: Vec<AppService> = Vec::new();
 
 struct AppService {
     name: String,
-    tags: Vec<String>,
+    labels: Vec<String>,
     ip: String,
-    port: i32
+    port: i32,
+    url: String,
 }
 
 fn main() {
@@ -32,14 +39,61 @@ fn main() {
         rt.block_on(load_services());
     }
     show_services();
-    
-    info!("Hello, world!");
+
+    info!("Listening via HTTP on this server {}", return_server());
+    let listener = TcpListener::bind(listern_address()).unwrap();
+    for stream in listener.incoming() {
+        let stream = stream.unwrap();
+        info!("Connection established");
+        thread::spawn(|| {
+            handle_connection(stream);
+        });
+    }
+}
+
+fn handle_connection(mut stream: std::net::TcpStream) {
+    let mut buffer = [0; 512];
+    stream.read(&mut buffer).unwrap();
+    let health = b"GET /health HTTP/1.1\r\n";
+    let endpoints = b"GET /endpoints HTTP/1.1\r\n";
+    let (status_line, contents) = if buffer.starts_with(health) {
+        ("HTTP/1.1 200 OK", "OK")
+    } else if buffer.starts_with(endpoints) {
+        // return an json array of services objects
+        let mut services: Vec<AppService> = Vec::new();
+        unsafe {
+            for service in SERVICES.iter() {
+                services.push(AppService {
+                    name: service.name.clone(),
+                    labels: service.labels.clone(),
+                    ip: service.ip.clone(),
+                    port: service.port,
+                    url: service.url.clone(),
+                });
+            }
+        }
+        let json = serde_json::to_string(&services).unwrap();
+        ("HTTP/1.1 200 OK", json.as_str())
+    } else {
+        ("HTTP/1.1 404 NOT FOUND", "404")
+    };
+
+    let length = contents.len();
+    let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
+    stream.write_all(response.as_bytes()).unwrap();
+    stream.flush().unwrap();
+    if buffer.starts_with(health) {
+        info!("Health check connection established");
+    }
 }
 
 fn show_services() {
     unsafe {
         for service in SERVICES.iter() {
-            info!("Service {} with tags {:?} is available at {}:{}", service.name, service.tags, service.ip, service.port);
+            info!(
+                "Service {} with labels {:?} is available at {}:{} | URL: {}:{}",
+                service.name, service.labels, service.ip, service.port, service.url, service.port
+            );
         }
     }
 }
@@ -52,15 +106,22 @@ async fn load_services() {
     info!("Found {} services", s.items.len());
     for service in s.items {
         info!("Found service {}", service.metadata.name.clone().unwrap());
-        let mut tags: Vec<String> = Vec::new();
+        let calculated_url = format!(
+            "{}.{}.svc.cluster.local",
+            service.metadata.name.clone().unwrap(),
+            service.metadata.namespace.clone().unwrap()
+        );
+        info!("Calculated URL {} ", calculated_url);
+        let mut labels: Vec<String> = Vec::new();
         for (key, value) in service.metadata.labels.unwrap().iter() {
-            tags.push(format!("{}={}", key, value));
+            labels.push(format!("{}={}", key, value));
         }
         let app_service = AppService {
             name: service.metadata.name.clone().unwrap(),
-            tags: tags,
+            labels: labels,
             ip: service.spec.clone().unwrap().cluster_ip.unwrap(),
-            port: service.spec.clone().unwrap().ports.unwrap()[0].port
+            port: service.spec.clone().unwrap().ports.unwrap()[0].port,
+            url: calculated_url,
         };
         unsafe { SERVICES.push(app_service) };
     }
@@ -70,23 +131,47 @@ fn load_enviroment_variables() {
     info!("Loading environment variables");
     match std::env::var("LISTENING_PORT") {
         Ok(val) => {
-            info!("Found LISTENING_PORT environment variable, setting PORT to {}", val);
+            info!(
+                "Found LISTENING_PORT environment variable, setting PORT to {}",
+                val
+            );
             unsafe { PORT = val.parse::<i32>().unwrap() };
-        },
+        }
         Err(_e) => {
-            unsafe { warn!("No LISTENING_PORT environment variable found, using default port {}", PORT) };
+            unsafe {
+                warn!(
+                    "No LISTENING_PORT environment variable found, using default port {}",
+                    PORT
+                )
+            };
         }
     }
     match std::env::var("KUBE_API_URL") {
         Ok(val) => {
-            info!("Found KUBE_API_URL environment variable, setting KUBE_API_URL to {}", val);
-            unsafe { 
+            info!(
+                "Found KUBE_API_URL environment variable, setting KUBE_API_URL to {}",
+                val
+            );
+            unsafe {
                 KUBE_API_URL.clone_from(&val);
                 info!("KUBE_API_URL is {}", KUBE_API_URL.as_str());
             };
-        },
+        }
         Err(_e) => {
-            unsafe { warn!("No KUBE_API_URL environment variable found, using default url {}", KUBE_API_URL.as_str()) };
+            unsafe {
+                warn!(
+                    "No KUBE_API_URL environment variable found, using default url {}",
+                    KUBE_API_URL.as_str()
+                )
+            };
         }
     }
+}
+
+fn return_server() -> String {
+    format!("http://{}", listern_address())
+}
+
+fn listern_address() -> String {
+    format!("0.0.0.0:{}", unsafe { PORT.to_string() })
 }
