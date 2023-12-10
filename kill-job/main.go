@@ -47,6 +47,7 @@ func main() {
 			log.Println("ERROR reading response body: " + err.Error())
 			return
 		}
+		log.Println("Response body: " + string(body))
 		var availableServices []AppService
 		err = json.Unmarshal(body, &availableServices)
 		if err != nil {
