@@ -17,7 +17,7 @@ labels:
   run: service-discoverer
   type: non-killable
   via: http
-refreshInterval: 10
+refreshInterval: 20
 
 serviceAccount:
   # Specifies whether a service account should be created

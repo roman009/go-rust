@@ -22,6 +22,8 @@ spec:
                 value: http://go-main.default.svc.cluster.local
               - name: MAX_REQUESTS
                 value: "2"
+              - name: SERVICE_DISCOVERER_URL
+                value: http://service-discoverer.default.svc.cluster.local
             command: 
             - /app/main
           restartPolicy: Never

@@ -18,7 +18,8 @@ use std::{
 static mut PORT: i32 = 8084;
 static mut REFRESH_INTERVAL: i32 = 30;
 static mut KUBE_API_URL: Lazy<String> = Lazy::new(|| "http://localhost:8080".to_string());
-static mut SERVICES: Vec<AppService> = Vec::new();
+static mut SERVICES_MAP: Lazy<std::collections::HashMap<String, AppService>> =
+    Lazy::new(|| std::collections::HashMap::new());
 
 #[derive(Serialize)]
 struct AppService {
@@ -63,11 +64,11 @@ fn handle_connection(mut stream: std::net::TcpStream) {
     info!("Connection established");
     let mut buffer = [0; 512];
     stream.read(&mut buffer).unwrap();
-    let health = b"GET /health HTTP/1.1\r\n";
-    let endpoints = b"GET /endpoints HTTP/1.1\r\n";
-    let (status_line, contents) = if buffer.starts_with(health) {
+    let health_request = b"GET /health HTTP/1.1\r\n";
+    let services_request = b"GET /services HTTP/1.1\r\n";
+    let (status_line, contents) = if buffer.starts_with(health_request) {
         ("HTTP/1.1 200 OK", "OK".to_string())
-    } else if buffer.starts_with(endpoints) {
+    } else if buffer.starts_with(services_request) {
         ("HTTP/1.1 200 OK", get_services_json())
     } else {
         ("HTTP/1.1 404 NOT FOUND", "404".to_string())
@@ -77,25 +78,32 @@ fn handle_connection(mut stream: std::net::TcpStream) {
     let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
     stream.write_all(response.as_bytes()).unwrap();
     stream.flush().unwrap();
-    if buffer.starts_with(health) {
+    if buffer.starts_with(health_request) {
         info!("Health check connection established");
     }
 }
 
 fn get_services_json() -> String {
-    let ret = json!(unsafe { &SERVICES }).to_string();
+    let mut ret = String::new();
+    unsafe {
+        for kv in SERVICES_MAP.iter() {
+            let service = kv.1;
+            ret.push_str(&json!(service).to_string());
+        };
+    };
     ret
 }
 
 fn show_services_in_logs() {
     unsafe {
-        for service in SERVICES.iter() {
+        for kv in SERVICES_MAP.iter() {
+            let service = kv.1;
             info!(
                 "Service {} with labels {:?} is available at {}:{} | URL: {}:{}",
                 service.name, service.labels, service.ip, service.port, service.url, service.port
             );
-        }
-    }
+        };
+    };
 }
 
 async fn load_services() {
@@ -123,7 +131,10 @@ async fn load_services() {
             port: service.spec.clone().unwrap().ports.unwrap()[0].port,
             url: calculated_url,
         };
-        unsafe { SERVICES.push(app_service) };
+        unsafe { SERVICES_MAP.insert(
+            service.metadata.name.clone().unwrap(),
+            app_service
+        ) };
     }
 }
 
