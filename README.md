@@ -19,6 +19,6 @@ microk8s kubectl describe secret -n kube-system microk8s-dashboard-token
 
 ## todo
 
-1. publish metrics of servive kill calls (prometheus?)
+1. publish metrics of servive kill calls (prometheus?/kafka?)
 
 2. create a reactive be4fe(?) that handles websocket connections to push messages to a UI (react?) that shows when a service is killed
