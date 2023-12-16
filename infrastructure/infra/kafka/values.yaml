@@ -125,7 +125,7 @@ kafka:
     ## @param listeners.client.sslClientAuth Optional. If SASL_SSL is enabled, configure mTLS TLS authentication type. If SSL protocol is enabled, overrides tls.authType for this listener. Allowed values are 'none', 'requested' and 'required'
     client:
       containerPort: 9092
-      protocol: SASL_PLAINTEXT
+      protocol: PLAINTEXT
       name: CLIENT
       sslClientAuth: ""
     ## @param listeners.controller.name Name for the Kafka controller listener
@@ -136,7 +136,7 @@ kafka:
     controller:
       name: CONTROLLER
       containerPort: 9093
-      protocol: SASL_PLAINTEXT
+      protocol: PLAINTEXT
       sslClientAuth: ""
     ## @param listeners.interbroker.name Name for the Kafka inter-broker listener
     ## @param listeners.interbroker.containerPort Port for the Kafka inter-broker listener
@@ -144,7 +144,7 @@ kafka:
     ## @param listeners.interbroker.sslClientAuth Optional. If SASL_SSL is enabled, configure mTLS TLS authentication type. If SSL protocol is enabled, overrides tls.authType for this listener. Allowed values are 'none', 'requested' and 'required'
     interbroker:
       containerPort: 9094
-      protocol: SASL_PLAINTEXT
+      protocol: PLAINTEXT
       name: INTERNAL
       sslClientAuth: ""
     ## @param listeners.external.containerPort Port for the Kafka external listener
@@ -153,7 +153,7 @@ kafka:
     ## @param listeners.external.sslClientAuth Optional. If SASL_SSL is enabled, configure mTLS TLS authentication type. If SSL protocol is enabled, overrides tls.sslClientAuth for this listener. Allowed values are 'none', 'requested' and 'required'
     external:
       containerPort: 9095
-      protocol: SASL_PLAINTEXT
+      protocol: PLAINTEXT
       name: EXTERNAL
       sslClientAuth: ""
     ## @param listeners.extraListeners Array of listener objects to be appended to already existing listeners
@@ -206,7 +206,7 @@ kafka:
     ##
     interbroker:
       user: inter_broker_user
-      password: ""
+      password: "inter_broker_password"
       clientId: inter_broker_client
       clientSecret: ""
     ## Credentials for controller communications.
@@ -217,7 +217,7 @@ kafka:
     ##
     controller:
       user: controller_user
-      password: ""
+      password: "controller_password"
       clientId: controller_broker_client
       clientSecret: ""
     ## Credentials for client communications.
@@ -227,7 +227,7 @@ kafka:
     client:
       users:
         - user1
-      passwords: ""
+      passwords: "password1"
     ## Credentials for Zookeeper communications.
     ## @param sasl.zookeeper.user Username for zookeeper communications when SASL is enabled.
     ## @param sasl.zookeeper.password Password for zookeeper communications when SASL is enabled.
@@ -374,7 +374,9 @@ kafka:
   ##   - name: KAFKA_CFG_BACKGROUND_THREADS
   ##     value: "10"
   ##
-  extraEnvVars: []
+  extraEnvVars: 
+    - name: KAFKA_CFG_BACKGROUND_THREADS
+      value: "2"
   ## @param extraEnvVarsCM ConfigMap with extra environment variables
   ##
   extraEnvVarsCM: ""
@@ -460,7 +462,7 @@ kafka:
     existingSecretConfig: ""
     ## @param controller.heapOpts Kafka Java Heap size for controller-eligible nodes
     ##
-    heapOpts: -Xmx450m -Xms450m
+    heapOpts: -Xmx512m -Xms512m
     ## @param controller.command Override Kafka container command
     ##
     command: []
@@ -474,7 +476,9 @@ kafka:
     ##   - name: KAFKA_CFG_BACKGROUND_THREADS
     ##     value: "10"
     ##
-    extraEnvVars: []
+    extraEnvVars: 
+      - name: KAFKA_CFG_BACKGROUND_THREADS
+        value: "2"
     ## @param controller.extraEnvVarsCM ConfigMap with extra environment variables
     ##
     extraEnvVarsCM: ""
@@ -555,8 +559,8 @@ kafka:
     ##
     resources:
       limits: 
-        cpu: 250m
-        memory: 512Mi
+        cpu: 500m
+        memory: 600Mi
       requests: 
         cpu: 125m
         memory: 128Mi
