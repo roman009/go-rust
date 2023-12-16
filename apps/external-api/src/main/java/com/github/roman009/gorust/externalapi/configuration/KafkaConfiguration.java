@@ -1,10 +1,15 @@
 package com.github.roman009.gorust.externalapi.configuration;
 
+import com.github.roman009.gorust.externalapi.message.Message;
+import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.converter.JsonMessageConverter;
 import org.springframework.kafka.support.converter.RecordMessageConverter;
 
@@ -12,7 +17,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
+@Log4j2
 public class KafkaConfiguration {
+
+    @Autowired
+    private KafkaTemplate<Object, Object> template;
 
     @Bean
     public RecordMessageConverter converter() {
@@ -32,5 +41,10 @@ public class KafkaConfiguration {
         return new KafkaAdmin.NewTopics(
                 TopicBuilder.name("killMessageSentT").build()
         );
+    }
+
+    @KafkaListener(id = "messageGroup", topics = "killMessageSentT")
+    public void listen(Message message) {
+        log.info("Received: " + message);
     }
 }
