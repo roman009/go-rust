@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var PORT = 8085
@@ -16,6 +18,7 @@ func main() {
 	http.HandleFunc("/hello", getHello)
 	http.HandleFunc("/die", postDie)
 	http.HandleFunc("/health", getHealth)
+	http.HandleFunc("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(PORT), nil))
 }
 
