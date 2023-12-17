@@ -31,6 +31,14 @@ microk8s kubectl describe secret -n kube-system microk8s-dashboard-token
 - java
 - javascript
 - kafka
+
+
+## references
+
+- https://spring.io/projects/spring-boot
+- https://go.dev/doc/
+- https://www.rust-lang.org/learn
+- https://microk8s.io/
   
 
 ## todo
