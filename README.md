@@ -10,6 +10,10 @@ Each microservice has a `/metrics` endpoint that is scraped by prometheus. The p
 ## microk8s
 
 ```bash
+./setup-infra.sh
+```
+
+```bash
 microk8s kubectl describe secret -n kube-system microk8s-dashboard-token
 ```
 
@@ -17,8 +21,20 @@ microk8s kubectl describe secret -n kube-system microk8s-dashboard-token
 ./build-and-deploy.sh
 ```
 
+
+## tech stack
+
+- microk8s
+- docker
+- rust
+- golang
+- java
+- javascript
+- kafka
+  
+
 ## todo
 
-1. publish metrics of servive kill calls (prometheus?/kafka?)
+1. publish metrics of service kill calls (prometheus?/kafka?) => kafka
 
 2. create a reactive be4fe(?) that handles websocket connections to push messages to a UI (react?) that shows when a service is killed
